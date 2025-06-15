@@ -13,7 +13,7 @@ from tkinter import ttk
 from tkinter import font
 from threading import Thread
 import keyboard
-import mouse
+from pynput.mouse import Controller
 import time
 # 
 #  define the modes
@@ -76,23 +76,6 @@ def handle_refresh_highlight(event): #  
     else:
         highlight_window.withdraw()
 # 
-def handle_mouse_press(event): #  
-    # I can't figure out how to get clicking to work. I think it needs to be on the main thread but its not consistent at all even when it is.
-    print('press')
-    mouse.press()
-# 
-def handle_mouse_release(event): #  
-    print('release')
-    mouse.release()
-# 
-def handle_mouse_click(event): #  
-    print('click')
-    mouse.click()
-# 
-def handle_mouse_move(event): #  
-    update_mouse_pos()
-    print('move')
-# 
 # 
 #  bind event handlers!
 statusbar.bind('<<event_refresh_statusbar>>', handle_refresh_statusbar)
@@ -100,29 +83,10 @@ statusbar.bind('<<event_exit_nomouse>>', handle_exit_nomouse)
 statusbar.bind('<<event_hide_statusbar>>', handle_hide_statusbar)
 statusbar.bind('<<event_show_statusbar>>', handle_show_statusbar)
 statusbar.bind('<<event_refresh_highlight>>', handle_refresh_highlight)
-statusbar.bind('<<event_mouse_press>>', handle_mouse_press)
-statusbar.bind('<<event_mouse_release>>', handle_mouse_release)
-statusbar.bind('<<event_mouse_click>>', handle_mouse_click)
-statusbar.bind('<<event_mouse_move>>', handle_mouse_move)
 # 
 # 
 #  create callback functions!
 #  create the functions
-def set_mode(mode): #  
-    print(f'switching to mode {mode}')
-    if mode not in mode_runners:
-        print(f'mode {mode} does not appear to have a registered runner. defaulting to IDLE mode')
-        mode = 'IDLE'
-    highlight((0,0,0,0,True))
-    state['current_mode']=mode
-    def nop():
-        pass
-    keyboard.add_hotkey('alt', nop)
-    keyboard.unhook_all()
-    statusbar.event_generate("<<event_refresh_statusbar>>")
-    set_hidden(False)
-    Thread(target=mode_runners[mode], args=(callbacks,)).start()
-# 
 def get_mode(): #  
     return state['current_mode']
 # 
@@ -150,29 +114,34 @@ def highlight(highlight_props): #  
 def get_screen_resolution(): #  
     return screen_width, screen_height
 # 
-def mouse_press(): #  
-    statusbar.event_generate("<<event_mouse_press>>")
-# 
-def mouse_release(): #  
-    statusbar.event_generate("<<event_mouse_release>>")
-# 
-def mouse_click(): #  
-    statusbar.event_generate("<<event_mouse_click>>")
-# 
-def mouse_move(mouse_x_pos, mouse_y_pos): #  
-    state['mouse_x_pos'] = mouse_x_pos
-    state['mouse_y_pos'] = mouse_y_pos
-    statusbar.event_generate("<<event_mouse_move>>")
-# 
 # 
 #  put em in a dictionary!
-callbacks = {'set_mode':set_mode, 'get_mode':get_mode, 'set_status':set_status, 'exit_nomouse':exit_nomouse, 'set_hidden':set_hidden, 'highlight':highlight, 'get_screen_resolution':get_screen_resolution, 'mouse_press':mouse_press, 'mouse_release':mouse_release, 'mouse_click':mouse_click, 'mouse_move':mouse_move}
+callbacks = {'get_mode':get_mode, 'set_status':set_status, 'exit_nomouse':exit_nomouse, 'set_hidden':set_hidden, 'highlight':highlight, 'get_screen_resolution':get_screen_resolution}
 # 
 # 
+# 
+def main_loop(starting_mode='IDLE'): #  
+    print(f'launching into mode {starting_mode}')
+    mode = starting_mode
+    state['mouse'] = Controller()
+    while True:
+        if mode not in mode_runners:
+            print(f'mode {mode} does not appear to have a registered runner. defaulting to IDLE mode')
+            mode = 'IDLE'
+            raise RuntimeError()
+        
+        highlight((0,0,0,0,True))
+        state['current_mode']=mode
+        def nop():
+            pass
+        keyboard.unhook_all()
+        statusbar.event_generate("<<event_refresh_statusbar>>")
+        set_hidden(False)
+        mode = mode_runners[mode](callbacks, state)
 # 
 #  launch the program!
-#  launch keyboard into default state
-set_mode('IDLE')
+#  launch main loop
+Thread(target=main_loop).start()
 # 
 #  start gui loop!
 statusbar.mainloop()

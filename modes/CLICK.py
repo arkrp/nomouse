@@ -1,78 +1,114 @@
 #  import stuff!
 import keyboard
 import time
+from pynput.mouse import Button
 from threading import Semaphore
 from sys import exit
-#TODO, completely remove mouse import from this thread. mouse input scripts appear to have substantial problems with multi-threading. move everything to the main thread.
 # 
-gridcharacters = list('qwertyuiopasdfghjkl;zxcvbnm,./')
+grid_characters = list('qwertyuiopasdfghjkl;zxcvbnm,./')
 movement_duration = 0.1
-def run_mode(callbacks): #  
+def run_mode(callbacks, state): #  
+    print('entering click')
     """this is mostly an ugly block of user input"""
-    set_mode = callbacks['set_mode']
     set_status = callbacks['set_status']
+    mouse = state['mouse']
     highlight_zone = highlight_zone_maker(callbacks['highlight'], *(callbacks['get_screen_resolution']()))
     screen_position = screen_position_maker(callbacks['highlight'], *(callbacks['get_screen_resolution']()))
-    keyboard.add_hotkey('alt+ctrl', callbacks['exit_nomouse'])
-    keyboard.add_hotkey('alt+tab', bind(set_mode, ('IDLE',)))
-    #keyboard.add_hotkey('alt+space', bind(set_mode, ('START_DRAG',)))
-    keyboard.on_press_key('esc', bind(set_mode, ('IDLE',)), suppress=True)
-    read_single_token(['alt'])
     grid_position = ''
-    #print(f'highlighting zone \'{grid_position}\'')
     highlight_zone(grid_position)
-    valid_tokens = list('qwertyuiopasdfghjkl;zxcvbnm,./') + ['alt', 'space']
-    token1 = read_single_token(valid_tokens)
+    valid_tokens = grid_characters + ['alt', 'space', 'shift', '\'']
+    suppressed_tokens=grid_characters+['space', '\'']
+    token1 = read_single_token(grid_characters+['alt', 'space', 'shift', '\'','ctrl', 'tab'], suppressed_tokens=suppressed_tokens)
     set_status(grid_position)
     if token1 == 'alt':
-        #callbacks['mouse_move'](*screen_position(grid_position))
-        print(f'moveing to zone {grid_position}')
-        set_mode('IDLE')
-        exit()
+        print('special functionality')
+        #TODO insert the move mode here. We are almost done!
+        return 'IDLE'
+    if token1 == 'tab':
+        return 'IDLE'
     elif token1 == 'space':
-        callbacks['mouse_click']()
-        print(f'click zone {grid_position}')
-        set_mode('IDLE')
-        exit()
+        highlight_zone(None)
+        mouse.click(Button.left, 1)
+        print('plain position click')
+        return 'IDLE'
+    elif token1 == 'ctrl':
+        callbacks['exit_nomouse']()
+        quit()
+    elif token1 == 'shift':
+        highlight_zone(None)
+        mouse.click(Button.right, 1)
+        print('position right click')
+        return 'IDLE'
+    elif token1 == '\'':
+        highlight_zone(None)
+        mouse.press(Button.left)
+        print('position start drag')
+        return 'CLICK'
     grid_position += token1
     highlight_zone(grid_position)
-    token2 = read_single_token(valid_tokens)
+    token2 = read_single_token(valid_tokens, suppressed_tokens=suppressed_tokens)
     if token2 == 'alt':
-        #callbacks['mouse_move'](*screen_position(grid_position))
-        #mouse.move(*screen_position(grid_position), duration=movement_duration)
+        mouse.position = screen_position(grid_position)
         print(f'moving to zone {grid_position}')
-        set_mode('IDLE')
-        exit()
+        return 'IDLE'
     elif token2 == 'space':
-        #mouse.move(*screen_position(grid_position))
-        callbacks['mouse_click']()
+        highlight_zone(None)
+        mouse.position = screen_position(grid_position)
+        mouse.click(Button.left, 1)
         print(f'click zone {grid_position}')
-        set_mode('IDLE')
-        exit()
+        return 'IDLE'
+    elif token2 == 'shift':
+        highlight_zone(None)
+        mouse.position = screen_position(grid_position)
+        mouse.click(Button.left, 1)
+        print(f'click zone {grid_position}')
+        return 'IDLE'
+        highlight_zone(None)
+        mouse.position = screen_position(grid_position)
+        mouse.click(Button.right, 1)
+        print(f'right click zone {grid_position}')
+        return 'IDLE'
+    elif token2 == '\'':
+        highlight_zone(None)
+        mouse.position = screen_position(grid_position)
+        mouse.press(Button.left)
+        print('position start drag')
+        return 'CLICK'
     else:
         grid_position += token2
         set_status(grid_position)
-    #print(f'highlighting zone \'{grid_position}\'')
     highlight_zone(grid_position)
-    token3 = read_single_token(valid_tokens)
+    token3 = read_single_token(valid_tokens, suppressed_tokens=suppressed_tokens)
     if token3 == 'alt':
-        #callbacks['mouse_move'](*screen_position(grid_position))
-        #mouse.move(*screen_position(grid_position), duration=movement_duration)
+        mouse.position = screen_position(grid_position)
         print(f'moving to zone {grid_position}')
-        set_mode('IDLE')
-        exit()
+        return 'IDLE'
     elif token3 == 'space':
-        #mouse.move(*screen_position(grid_position))
-        callbacks['mouse_click']()
+        highlight_zone(None)
+        mouse.position = screen_position(grid_position)
+        mouse.click(Button.left, 1)
         print(f'click zone {grid_position}')
-        set_mode('IDLE')
-        exit()
+        return 'IDLE'
+    elif token3 == 'shift':
+        highlight_zone(None)
+        mouse.position = screen_position(grid_position)
+        mouse.click(Button.right, 1)
+        print(f'right click zone {grid_position}')
+        return 'IDLE'
+    elif token3 == '\'':
+        highlight_zone(None)
+        mouse.position = screen_position(grid_position)
+        mouse.press(Button.left)
+        print('position start drag')
+        return 'CLICK'
     else:
         grid_position += token3
         set_status(grid_position)
+        highlight_zone(None)
+        mouse.position = screen_position(grid_position)
+        mouse.click(Button.left, 1)
         print(f'click zone {grid_position}')
-        set_mode('IDLE')
-        exit()
+        return 'IDLE'
 # 
 def hello(): #  
     # says hello!
@@ -84,7 +120,7 @@ def bind(func, args): #  
         return func(*args)
     return return_value
 # 
-def read_single_token(valid_tokens): #  
+def read_single_token(press_tokens=(), release_tokens=(), suppressed_tokens=(), on_release=False): #  
     # waits for a key to be pressed from valid tokens and then returns which one got pressed.
     signal = Semaphore(0)
     return_value = None
@@ -92,16 +128,24 @@ def read_single_token(valid_tokens): #  
         nonlocal return_value
         return_value = ''.join(value)
         signal.release()
-    for token in valid_tokens:
-        keyboard.on_press_key(token, bind(int, ()), suppress=True) #treat int creation as a nop
-        keyboard.on_release_key(token, bind(write_return_value, (token)), suppress=True)
+    for token in press_tokens:
+        suppress = token in suppressed_tokens
+        keyboard.on_press_key(token, bind(write_return_value, (token)), suppress=suppress) #treat int creation as a nop
+    for token in release_tokens:
+        suppress = token in suppressed_tokens
+        keyboard.on_release_key(token, bind(write_return_value, (token)), suppress=suppress)
     signal.acquire()
-    for token in valid_tokens:
+    for token in press_tokens:
+        keyboard.unhook(token)
+    for token in release_tokens:
         keyboard.unhook(token)
     return return_value
 # 
 def highlight_zone_maker(highlight, screen_width, screen_height): #  
     def highlight_zone(grid_position):
+        if(grid_position==None):
+            highlight((0,0,0,0,False))
+            return
         'highlights a zone specified by the selector characters'
         base_x, base_y = 0, 0
         width_1, height_1 = screen_width//5, screen_height//6
