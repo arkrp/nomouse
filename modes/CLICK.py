@@ -3,7 +3,6 @@ import keyboard
 import time
 from threading import Semaphore
 from sys import exit
-import mouse
 #TODO, completely remove mouse import from this thread. mouse input scripts appear to have substantial problems with multi-threading. move everything to the main thread.
 # 
 gridcharacters = list('qwertyuiopasdfghjkl;zxcvbnm,./')
@@ -26,15 +25,12 @@ def run_mode(callbacks): #  
     token1 = read_single_token(valid_tokens)
     set_status(grid_position)
     if token1 == 'alt':
-        mouse.move(*screen_position(grid_position), duration=movement_duration)
-        pyautogui.moveTo(*screen_position(grid_position))
+        #callbacks['mouse_move'](*screen_position(grid_position))
         print(f'moveing to zone {grid_position}')
         set_mode('IDLE')
         exit()
     elif token1 == 'space':
-        #mouse.move(*screen_position(grid_position))
-        callbacks['mouse_press']()
-        #callbacks['mouse_release']()
+        callbacks['mouse_click']()
         print(f'click zone {grid_position}')
         set_mode('IDLE')
         exit()
@@ -42,15 +38,14 @@ def run_mode(callbacks): #  
     highlight_zone(grid_position)
     token2 = read_single_token(valid_tokens)
     if token2 == 'alt':
-        mouse.move(*screen_position(grid_position), duration=movement_duration)
-        pyautogui.moveTo(*screen_position(grid_position))
+        #callbacks['mouse_move'](*screen_position(grid_position))
+        #mouse.move(*screen_position(grid_position), duration=movement_duration)
         print(f'moving to zone {grid_position}')
         set_mode('IDLE')
         exit()
     elif token2 == 'space':
         #mouse.move(*screen_position(grid_position))
-        callbacks['mouse_press']()
-        #callbacks['mouse_release']()
+        callbacks['mouse_click']()
         print(f'click zone {grid_position}')
         set_mode('IDLE')
         exit()
@@ -61,14 +56,14 @@ def run_mode(callbacks): #  
     highlight_zone(grid_position)
     token3 = read_single_token(valid_tokens)
     if token3 == 'alt':
-        mouse.move(*screen_position(grid_position), duration=movement_duration)
+        #callbacks['mouse_move'](*screen_position(grid_position))
+        #mouse.move(*screen_position(grid_position), duration=movement_duration)
         print(f'moving to zone {grid_position}')
         set_mode('IDLE')
         exit()
     elif token3 == 'space':
         #mouse.move(*screen_position(grid_position))
-        callbacks['mouse_press']()
-        #callbacks['mouse_release']()
+        callbacks['mouse_click']()
         print(f'click zone {grid_position}')
         set_mode('IDLE')
         exit()

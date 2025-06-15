@@ -1,3 +1,4 @@
+#  setup
 """ #  
 nomouse.py
 
@@ -20,6 +21,11 @@ from modes.IDLE import run_mode as IDLE
 from modes.CLICK import run_mode as CLICK
 mode_runners = {'IDLE':IDLE,'CLICK':CLICK}
 # 
+#  create state
+state = {'current_mode':'', 'status_text':'', 'statusbar_hidden':False , 'highlight':(400,400,400,400,True), 'mouse_x_pos':100, 'mouse_y_pos':100}
+# 
+# 
+#  create GUI elements
 #  make the statusbar
 statusbar = tk.Tk()
 screen_width = statusbar.winfo_screenwidth()
@@ -40,8 +46,12 @@ highlight_window.attributes('-topmost', 1)
 highlight_window.overrideredirect(1)
 highlight_window.geometry(f"{10}x{10}+{10}+{10}")
 # 
-#  create state
-state = {'current_mode':'', 'status_text':'', 'statusbar_hidden':False , 'highlight':(400,400,400,400,True)}
+# 
+#  create interface
+#  create helper functions
+def update_mouse_pos(): #  
+    mouse.move(state['mouse_x_pos'], state['mouse_y_pos'])
+# 
 # 
 #  make event stuff for gui
 #  create event handlers!
@@ -68,14 +78,20 @@ def handle_refresh_highlight(event): #  
 # 
 def handle_mouse_press(event): #  
     # I can't figure out how to get clicking to work. I think it needs to be on the main thread but its not consistent at all even when it is.
-    time.sleep(0.1)
-    mouse.click()
-    print('click')
-    time.sleep(0.1)
+    print('press')
+    mouse.press()
 # 
 def handle_mouse_release(event): #  
     print('release')
     mouse.release()
+# 
+def handle_mouse_click(event): #  
+    print('click')
+    mouse.click()
+# 
+def handle_mouse_move(event): #  
+    update_mouse_pos()
+    print('move')
 # 
 # 
 #  bind event handlers!
@@ -86,6 +102,8 @@ statusbar.bind('<<event_show_statusbar>>', handle_show_statusbar)
 statusbar.bind('<<event_refresh_highlight>>', handle_refresh_highlight)
 statusbar.bind('<<event_mouse_press>>', handle_mouse_press)
 statusbar.bind('<<event_mouse_release>>', handle_mouse_release)
+statusbar.bind('<<event_mouse_click>>', handle_mouse_click)
+statusbar.bind('<<event_mouse_move>>', handle_mouse_move)
 # 
 # 
 #  create callback functions!
@@ -138,14 +156,25 @@ def mouse_press(): #  
 def mouse_release(): #  
     statusbar.event_generate("<<event_mouse_release>>")
 # 
+def mouse_click(): #  
+    statusbar.event_generate("<<event_mouse_click>>")
+# 
+def mouse_move(mouse_x_pos, mouse_y_pos): #  
+    state['mouse_x_pos'] = mouse_x_pos
+    state['mouse_y_pos'] = mouse_y_pos
+    statusbar.event_generate("<<event_mouse_move>>")
+# 
 # 
 #  put em in a dictionary!
-callbacks = {'set_mode':set_mode, 'get_mode':get_mode, 'set_status':set_status, 'exit_nomouse':exit_nomouse, 'set_hidden':set_hidden, 'highlight':highlight, 'get_screen_resolution':get_screen_resolution, 'mouse_press':mouse_press, 'mouse_release':mouse_release}
+callbacks = {'set_mode':set_mode, 'get_mode':get_mode, 'set_status':set_status, 'exit_nomouse':exit_nomouse, 'set_hidden':set_hidden, 'highlight':highlight, 'get_screen_resolution':get_screen_resolution, 'mouse_press':mouse_press, 'mouse_release':mouse_release, 'mouse_click':mouse_click, 'mouse_move':mouse_move}
 # 
 # 
+# 
+#  launch the program!
 #  launch keyboard into default state
 set_mode('IDLE')
 # 
 #  start gui loop!
 statusbar.mainloop()
+# 
 # 
