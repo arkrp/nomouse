@@ -13,6 +13,7 @@ from tkinter import font
 from threading import Thread
 import keyboard
 import mouse
+import time
 # 
 #  define the modes
 from modes.IDLE import run_mode as IDLE
@@ -65,6 +66,17 @@ def handle_refresh_highlight(event): #  
     else:
         highlight_window.withdraw()
 # 
+def handle_mouse_press(event): #  
+    # I can't figure out how to get clicking to work. I think it needs to be on the main thread but its not consistent at all even when it is.
+    time.sleep(0.1)
+    mouse.click()
+    print('click')
+    time.sleep(0.1)
+# 
+def handle_mouse_release(event): #  
+    print('release')
+    mouse.release()
+# 
 # 
 #  bind event handlers!
 statusbar.bind('<<event_refresh_statusbar>>', handle_refresh_statusbar)
@@ -72,6 +84,8 @@ statusbar.bind('<<event_exit_nomouse>>', handle_exit_nomouse)
 statusbar.bind('<<event_hide_statusbar>>', handle_hide_statusbar)
 statusbar.bind('<<event_show_statusbar>>', handle_show_statusbar)
 statusbar.bind('<<event_refresh_highlight>>', handle_refresh_highlight)
+statusbar.bind('<<event_mouse_press>>', handle_mouse_press)
+statusbar.bind('<<event_mouse_release>>', handle_mouse_release)
 # 
 # 
 #  create callback functions!
@@ -81,7 +95,7 @@ def set_mode(mode): #  
     if mode not in mode_runners:
         print(f'mode {mode} does not appear to have a registered runner. defaulting to IDLE mode')
         mode = 'IDLE'
-    highlight(0,0,0,0,True))
+    highlight((0,0,0,0,True))
     state['current_mode']=mode
     def nop():
         pass
@@ -115,11 +129,18 @@ def highlight(highlight_props): #  
     state['highlight'] = highlight_props
     statusbar.event_generate("<<event_refresh_highlight>>")
 # 
-def get_screen_resolution():
+def get_screen_resolution(): #  
     return screen_width, screen_height
 # 
+def mouse_press(): #  
+    statusbar.event_generate("<<event_mouse_press>>")
+# 
+def mouse_release(): #  
+    statusbar.event_generate("<<event_mouse_release>>")
+# 
+# 
 #  put em in a dictionary!
-callbacks = {'set_mode':set_mode, 'get_mode':get_mode, 'set_status':set_status, 'exit_nomouse':exit_nomouse, 'set_hidden':set_hidden, 'highlight':highlight, 'get_screen_resolution':get_screen_resolution}
+callbacks = {'set_mode':set_mode, 'get_mode':get_mode, 'set_status':set_status, 'exit_nomouse':exit_nomouse, 'set_hidden':set_hidden, 'highlight':highlight, 'get_screen_resolution':get_screen_resolution, 'mouse_press':mouse_press, 'mouse_release':mouse_release}
 # 
 # 
 #  launch keyboard into default state
