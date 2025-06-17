@@ -11,7 +11,7 @@ the main file is mostly just a whole bunch of bindings to let our mode runners e
 import tkinter as tk
 from tkinter import ttk
 from tkinter import font
-from threading import Thread
+from threading import Thread, Semaphore
 import keyboard
 from pynput.mouse import Controller
 import time
@@ -46,6 +46,7 @@ highlight_window.wm_attributes('-alpha', 0.8)
 highlight_window.attributes('-topmost', 1)
 highlight_window.overrideredirect(1)
 highlight_window.geometry(f"{10}x{10}+{10}+{10}")
+highlight_window_semaphore = Semaphore(0)
 # 
 # 
 #  create interface
@@ -76,6 +77,7 @@ def handle_refresh_highlight(event): #  
         highlight_window.deiconify()
     else:
         highlight_window.withdraw()
+    highlight_window_semaphore.release()
 # 
 # 
 #  bind event handlers!
@@ -111,6 +113,7 @@ def highlight(highlight_props): #  
         raise ValueError('highlight_props is a tuple with 5 values, width(int), height(int), x_offset(int), y_offset(int), and highlight_active(bool)')
     state['highlight'] = highlight_props
     statusbar.event_generate("<<event_refresh_highlight>>")
+    highlight_window_semaphore.acquire()
 # 
 def get_screen_resolution(): #  
     return screen_width, screen_height
