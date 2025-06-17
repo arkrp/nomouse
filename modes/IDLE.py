@@ -2,7 +2,7 @@ import keyboard
 from threading import Semaphore
 import time
 def run_mode(callbacks, state):
-    token = read_single_token(['alt'])
+    token = read_single_token(['alt'], suppressed_tokens=['alt'])
     return 'CLICK'
 def bind(func, args):
     def return_value(*ignored_args):

@@ -17,13 +17,13 @@ def run_mode(callbacks, state): #  
     grid_position = ''
     highlight_zone(grid_position)
     valid_tokens = grid_characters + ['alt', 'space', 'shift', '\'']
-    suppressed_tokens=grid_characters+['space', '\'']
+    suppressed_tokens=valid_tokens + ['tab']
     token1 = read_single_token(grid_characters+['alt', 'space', 'shift', '\'','ctrl', 'tab'], suppressed_tokens=suppressed_tokens)
     set_status(grid_position)
     if token1 == 'alt':
         return 'MOVE'
     if token1 == 'tab':
-        return 'IDLE'
+        return 'ALTTAB'
     elif token1 == 'space':
         highlight_zone(None)
         mouse.click(Button.left, 1)

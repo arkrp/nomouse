@@ -20,7 +20,8 @@ import time
 from modes.IDLE import run_mode as IDLE
 from modes.CLICK import run_mode as CLICK
 from modes.MOVE import run_mode as MOVE
-mode_runners = {'IDLE':IDLE, 'CLICK':CLICK, 'MOVE':MOVE}
+from modes.ALTTAB import run_mode as ALTTAB
+mode_runners = {'IDLE':IDLE, 'CLICK':CLICK, 'MOVE':MOVE, 'ALTTAB':ALTTAB}
 # 
 #  create state
 state = {'current_mode':'', 'status_text':'', 'statusbar_hidden':False , 'highlight':(400,400,400,400,True), 'mouse_x_pos':100, 'mouse_y_pos':100}

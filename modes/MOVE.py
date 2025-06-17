@@ -19,11 +19,14 @@ def run_mode(callbacks, state):
         state['mouse'].press(Button.right)
     def release_right(*ignored_args):
         state['mouse'].release(Button.right)
-    keyboard.on_release_key('alt', cancel_loop)
-    keyboard.on_press_key('space', press_left, suppress=True)
+    def press_alt(*ignored_args):
+        keyboard.press('alt')
+    keyboard.on_release_key('alt', cancel_loop, suppress=True) #you have to hold alt to stay in this mode
+    keyboard.on_press_key('space', press_left, suppress=True) #space is for left click
     keyboard.on_release_key('space', release_left, suppress=True)
-    keyboard.on_press_key('f', press_right, suppress=True)
+    keyboard.on_press_key('f', press_right, suppress=True) #f is for right click
     keyboard.on_release_key('f', release_right, suppress=True)
+    keyboard.on_press_key('r', press_alt, suppress=True) #method of holding alt for other programs
     for letter in 'hjkl':
         keyboard.block_key(letter)
     while(running):
