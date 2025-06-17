@@ -5,20 +5,32 @@ import time
 import sys
 TIME_DELAY = 0.03
 MOVEMENT_SPEED = 200
+SCROLL_SPEED = 10
 MOVEMENT_INCREMENT = TIME_DELAY * MOVEMENT_SPEED
+SCROLL_INCREMENT = TIME_DELAY * SCROLL_SPEED
 def run_mode(callbacks, state):
     print('MOVE mode activated')
     running = True
     def cancel_loop(*ignored_args):
         nonlocal running
         running = False
+    left_pressed = False
     def press_left(*ignored_args):
+        nonlocal left_pressed
+        left_pressed = True
         state['mouse'].press(Button.left)
     def release_left(*ignored_args):
+        nonlocal left_pressed
+        left_pressed = False
         state['mouse'].release(Button.left)
+    right_pressed = False
     def press_right(*ignored_args):
+        nonlocal right_pressed
+        right_pressed = True
         state['mouse'].press(Button.right)
     def release_right(*ignored_args):
+        nonlocal right_pressed
+        right_pressed = False
         state['mouse'].release(Button.right)
     def press_alt(*ignored_args):
         keyboard.press('alt')
@@ -34,7 +46,7 @@ def run_mode(callbacks, state):
     keyboard.on_release_key('f', release_right, suppress=True)
     keyboard.on_press_key('r', press_alt, suppress=True) #method of holding alt for other programs
     keyboard.on_press_key('q', quit_program, suppress=True) #method of holding alt for other programs
-    for letter in 'hjkl':
+    for letter in 'qwertyuiop[]asdfghjkl;\'zxcvbnm,./':
         keyboard.block_key(letter)
     while(running):
         time.sleep(TIME_DELAY)
@@ -47,11 +59,15 @@ def run_mode(callbacks, state):
             x_displacement = MOVEMENT_INCREMENT
         if keyboard.is_pressed('h'):
             x_displacement = -MOVEMENT_INCREMENT
+        if keyboard.is_pressed('m'):
+            state['mouse'].scroll(0,-SCROLL_INCREMENT)
+        if keyboard.is_pressed(','):
+            state['mouse'].scroll(0,SCROLL_INCREMENT)
         state['mouse'].move(x_displacement, y_displacement)
-    release_left()
-    release_right()
-    state['mouse'].release(Button.left)
-    state['mouse'].release(Button.right)
+    if left_pressed:
+        release_left()
+    if right_pressed:
+        release_right()
     if exit_mark == True:
         callbacks['exit_nomouse']()
         sys.exit()
