@@ -17,8 +17,8 @@ def run_mode(callbacks, state): #  
     grid_position = ''
     highlight_zone(grid_position)
     valid_tokens = grid_characters + ['alt', 'space', 'shift', '\'']
-    suppressed_tokens=valid_tokens + ['tab']
-    token1 = read_single_token(grid_characters+['alt', 'space', 'shift', '\'','ctrl', 'tab'], suppressed_tokens=suppressed_tokens)
+    suppressed_tokens=valid_tokens + ['tab', 'ctrl']
+    token1 = read_single_token(grid_characters+['alt', 'space', 'shift', '\'', 'tab'], suppressed_tokens=suppressed_tokens)
     set_status(grid_position)
     if token1 == 'alt':
         return 'MOVE'
@@ -29,9 +29,6 @@ def run_mode(callbacks, state): #  
         mouse.click(Button.left, 1)
         print('plain position click')
         return 'IDLE'
-    elif token1 == 'ctrl':
-        callbacks['exit_nomouse']()
-        quit()
     elif token1 == 'shift':
         highlight_zone(None)
         mouse.click(Button.right, 1)
@@ -46,7 +43,6 @@ def run_mode(callbacks, state): #  
     grid_position += token1
     highlight_zone(grid_position)
     token2 = read_single_token(valid_tokens, suppressed_tokens=suppressed_tokens)
-    #TODO fix odd bug. Level two clicks do not work. Oddly level 3 clicks do? It also seems to move it correctly?
     if token2 == 'alt':
         mouse.position = screen_position(grid_position)
         print(f'moving to zone {grid_position}')
