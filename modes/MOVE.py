@@ -50,6 +50,8 @@ def run_mode(callbacks, state):
         state['mouse'].move(x_displacement, y_displacement)
     release_left()
     release_right()
+    state['mouse'].release(Button.left)
+    state['mouse'].release(Button.right)
     if exit_mark == True:
         callbacks['exit_nomouse']()
         sys.exit()
