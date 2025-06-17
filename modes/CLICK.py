@@ -40,6 +40,7 @@ def run_mode(callbacks, state): #  
     elif token1 == '\'':
         highlight_zone(None)
         mouse.press(Button.left)
+        read_single_token(release_tokens=('\''), suppressed_tokens=suppressed_tokens)
         print('position start drag')
         return 'CLICK'
     grid_position += token1
@@ -52,25 +53,21 @@ def run_mode(callbacks, state): #  
         return 'IDLE'
     elif token2 == 'space':
         highlight_zone(None)
-        mouse.position = screen_position(grid_position)
+        mouse.position = screen_position(grid_position+'c')
         mouse.click(Button.left, 1)
         print(f'click zone {grid_position}')
         return 'IDLE'
     elif token2 == 'shift':
         highlight_zone(None)
-        mouse.position = screen_position(grid_position)
-        mouse.click(Button.left, 1)
-        print(f'click zone {grid_position}')
-        return 'IDLE'
-        highlight_zone(None)
-        mouse.position = screen_position(grid_position)
+        mouse.position = screen_position(grid_position+'c')
         mouse.click(Button.right, 1)
         print(f'right click zone {grid_position}')
         return 'IDLE'
     elif token2 == '\'':
         highlight_zone(None)
-        mouse.position = screen_position(grid_position)
+        mouse.position = screen_position(grid_position+'c')
         mouse.press(Button.left)
+        read_single_token(release_tokens=('\''), suppressed_tokens=suppressed_tokens)
         print('position start drag')
         return 'CLICK'
     else:
@@ -98,6 +95,7 @@ def run_mode(callbacks, state): #  
         highlight_zone(None)
         mouse.position = screen_position(grid_position)
         mouse.press(Button.left)
+        read_single_token(release_tokens=('\''), suppressed_tokens=suppressed_tokens)
         print('position start drag')
         return 'CLICK'
     else:
